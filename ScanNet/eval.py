@@ -6,6 +6,7 @@ warnings.simplefilter("ignore", FutureWarning)
 import argparse
 import sys
 import os
+from gpcc_test import gpcc_test
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(BASE_DIR, '..')))
 
@@ -115,7 +116,9 @@ with torch.no_grad():
     psnr_list = []
     entropy_bottleneck.eval() 
     initial_coding_module.eval() 
-    inter_channel_module.eval() 
+    inter_channel_module.eval()
+    bpp_list_gpcc = []
+    psnr_list_gpcc = []
  
     
     training=False       
@@ -128,7 +131,10 @@ with torch.no_grad():
         points, colors = data
         points, colors = points[0].numpy(), colors[0].numpy()
         colors = colors*255
-        colors = utils.RGB2YUV(colors) 
+        bpp_gpcc, psnr_gpcc = gpcc_test(points, colors)
+        bpp_list_gpcc.append(bpp_gpcc)
+        psnr_list_gpcc.append(psnr_gpcc)
+        colors = utils.RGB2YUV(colors)
         
         
             
@@ -294,7 +300,9 @@ with torch.no_grad():
     
     print('Average test loss and psnr: %f, %f' %
           ((test_loss_sum / len(test_dataloader)), np.mean(psnr_list))
-          )        
+          )
+    print('GPCC bpp:', np.mean(bpp_list_gpcc))
+    print('GPCC psnr:', np.mean(psnr_list_gpcc))
 
 
 
